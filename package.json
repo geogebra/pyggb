@@ -57,9 +57,12 @@
   },
   "devDependencies": {
     "@types/base-64": "^1.0.0",
+    "@types/dom-serial": "^1.0.3",
     "@types/file-saver": "^2.0.5",
     "@types/utf8": "^3.0.1",
     "@types/uuid": "^9.0.0",
+    "@types/w3c-web-usb": "^1.0.6",
+    "@types/web-bluetooth": "^0.0.17",
     "cypress": "^12.5.1",
     "uuid": "^9.0.0"
   }
