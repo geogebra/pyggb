@@ -19,6 +19,7 @@ import { register as registerIntersect } from "./wrappings/intersect";
 import { register as registerClearConsole } from "./app-ui/clear-console";
 
 import { register as registerOnTemperatureReport } from "./web-hid/on-temperature-report";
+import { register as registerBrowserDevice } from "./browser-devices";
 
 import { register as registerInterruptibleSleep } from "./interruptible-sleep";
 
@@ -54,6 +55,7 @@ declare var Sk: SkulptApi;
   registerClearConsole(mod, appApi);
 
   registerOnTemperatureReport(mod, appApi);
+  registerBrowserDevice(mod, appApi);
 
   registerInterruptibleSleep(mod, appApi);
 
