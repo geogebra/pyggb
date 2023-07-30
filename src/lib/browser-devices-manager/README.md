@@ -24,3 +24,6 @@ Implement sending commands to devices, e.g., for a Circuit Playground
 Express with suitable firmware.
 
 Implement Web USB devices.
+
+Tests!  This could be tricky; do we mock all the different types of
+error and device we might get back from the browser?
