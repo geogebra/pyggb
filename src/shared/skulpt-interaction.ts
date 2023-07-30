@@ -6,6 +6,10 @@ import {
   SkulptApi,
   augmentedSkulptApi,
 } from "./vendor-types/skulptapi";
+import {
+  closeLiveSession,
+  resetLiveSession,
+} from "../wrap-ggb/browser-devices";
 
 declare var Sk: SkulptApi;
 
@@ -74,6 +78,7 @@ export const runPythonProgram = (
   errorActions.clear();
   ggbApi.reset();
   hidApi.clearRegistration();
+  resetLiveSession();
 
   // TODO: Seems a bit clunky to reuse errorActions and stdoutActions
   // like this.  Revisit?
@@ -102,5 +107,6 @@ export const runPythonProgram = (
     .asyncToPromise(() =>
       Sk.importMainWithBody("<stdin>", false, codeText, true)
     )
-    .catch(handleError);
+    .catch(handleError)
+    .finally(closeLiveSession);
 };
