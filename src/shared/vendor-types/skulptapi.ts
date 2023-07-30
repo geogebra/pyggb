@@ -116,6 +116,7 @@ type SkMiscEvalT = {
 
 type SkFfiT = {
   remapToJs(x: SkObject): any;
+  remapToPy(x: any): SkObject;
 };
 
 export type SkulptApi = {
