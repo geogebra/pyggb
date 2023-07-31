@@ -62,7 +62,7 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
     _device: BluetoothDevice,
     _specifier: BrowserDeviceSpecifier
   ): boolean {
-    throw this._notImplementedError("deviceCanBeHandled");
+    throw this._notImplementedError("canHandleDevice");
   }
   //
   deviceClass(): HandledDeviceConstructor {
