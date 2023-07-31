@@ -3,6 +3,9 @@ import { register as registerLogitechAttackIII } from "./drivers/logitech-attack
 import { register as registerPicoW } from "./drivers/pico-w-temp-sensor";
 import { register as registerMantaMM812 } from "./drivers/manta-mm812";
 
+export type { BrowserDeviceSpecifier, StringKeyedObject } from "./core-types";
+export * as substrates from "./substrates";
+
 // TODO: The idea of the "specifier" needs more work.
 
 // Need some clear terms to distinguish between

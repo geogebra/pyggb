@@ -4,6 +4,9 @@ export type AnyPhysicalDevice =
   | SerialPort
   | USBDevice;
 
+export * as ble from "./ble";
+export * as hid from "./hid";
+
 // TODO: Not currently using SerialPort or USBDevice.
 
 /** Terminology:
