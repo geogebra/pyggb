@@ -434,7 +434,7 @@ class BleDeviceDriver {
     }
     //
     canHandleDevice(_device, _specifier) {
-        throw this._notImplementedError("deviceCanBeHandled");
+        throw this._notImplementedError("canHandleDevice");
     }
     //
     deviceClass() {
@@ -528,6 +528,7 @@ class BleDeviceDriver {
         // TODO: Query navigator.bluetooth.getDevices() and see if there's
         // one in there which satisfies the specifier and we can connect to.
         const allPermittedDevices = await navigator.bluetooth.getDevices();
+        console.log("BLE devices", allPermittedDevices);
         for (const device of allPermittedDevices) {
             const leaseHolder = manager.leaseHolder(device);
             console.log("device", device, "has leaseHolder", leaseHolder);
@@ -592,6 +593,11 @@ class PicoTempSensor_Driver extends BleDeviceDriver {
     canProvide(spec) {
         // TODO: Do this properly.  Once decided what format spec can take.
         return spec === "Pico Temp";
+    }
+    canHandleDevice(device, specifier) {
+        var _a;
+        const name = (_a = device.name) !== null && _a !== void 0 ? _a : "";
+        return name.startsWith("Pico ");
     }
     deviceClass() {
         return PicoTempSensor_Device;
