@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+  </head>
+
+  <body>
+    <button id="go-button">Go!</button>
+    <pre id="joystick-output"></pre>
+    <script type="module">
+      ////////////////////////////////////////////////////////////////////////
+      // Import module and construct manager and session.
+      import { createBrowserDeviceManager } from "./browser-device-lib/index.js";
+      const manager = createBrowserDeviceManager();
+      const session = manager.createSession("experiments");
+      ////////////////////////////////////////////////////////////////////////
+
+      /** Convert timestamp in seconds-since-epoch to ISO8601 string. */
+      const asISO = (t) => new Date(t * 1000.0).toISOString();
+
+      async function main() {
+        ////////////////////////////////////////////////////////////////////////
+        // Request joystick.  Will use chooser only first time.
+        const joystick = await session.tryProvideLease("Attack III");
+        ////////////////////////////////////////////////////////////////////////
+
+        let buffer = [];
+        const N_BUFFER_LINES = 25;
+        function run() {
+          ////////////////////////////////////////////////////////////////////////
+          // Fetch whatever reports have built up since previous call.
+          const reports = joystick.drainReports();
+          ////////////////////////////////////////////////////////////////////////
+
+          reports.forEach((r) => (r.timestamp = asISO(r.timestamp)));
+          buffer.push(...reports.map(JSON.stringify));
+          buffer = buffer.slice(-N_BUFFER_LINES);
+          const bufferText = buffer.join("\n") + "\n";
+          document.getElementById("joystick-output").innerText = bufferText;
+        }
+
+        setInterval(run, 20);
+      }
+
+      document.getElementById("go-button").addEventListener("click", main);
+    </script>
+  </body>
+</html>
