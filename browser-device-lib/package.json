@@ -1,0 +1,18 @@
+{
+  "name": "browser-device-lib",
+  "version": "1.0.0",
+  "description": "Experimental library for interacting with browser devices",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup --config rollup.config.js"
+  },
+  "author": "Ben North <ben@redfrontdoor.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.2",
+    "rollup": "^3.27.0",
+    "tslib": "^2.6.1",
+    "typescript": "^5.1.6"
+  }
+}
