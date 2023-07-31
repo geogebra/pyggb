@@ -194,6 +194,7 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
     // one in there which satisfies the specifier and we can connect to.
 
     const allPermittedDevices = await navigator.bluetooth.getDevices();
+    console.log("BLE devices", allPermittedDevices);
     for (const device of allPermittedDevices) {
       const leaseHolder = manager.leaseHolder(device);
       console.log("device", device, "has leaseHolder", leaseHolder);
