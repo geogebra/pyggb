@@ -232,9 +232,11 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
 
     while (true) {
       console.log("attempting requestDevice()");
-      const rawDevice = await navigator.bluetooth.requestDevice({
-        filters: [{ services: this.handledServiceUuids() }],
-      });
+
+      const filters = [
+        { services: this.handledServiceUuids() },
+      ];
+      const rawDevice = await navigator.bluetooth.requestDevice({ filters });
 
       console.log("working with rawDevice", rawDevice);
 
