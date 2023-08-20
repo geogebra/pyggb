@@ -237,8 +237,11 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
     while (true) {
       console.log("attempting requestDevice()");
 
+      // Accept devices which either provide the right services or have
+      // the right name-prefix.
       const filters = [
         { services: this.handledServiceUuids() },
+        { namePrefix: this.namePrefix() },
       ];
       const rawDevice = await navigator.bluetooth.requestDevice({ filters });
 
