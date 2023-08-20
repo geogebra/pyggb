@@ -139,32 +139,38 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
         // thrown if the service does not have this characteristic?
         const characteristic = await service.getCharacteristic(charUuid);
         console.log("got char", characteristic, "for", charUuid);
-        const listener = this.newCharValueListener(
-          handledDevice,
-          serviceUuid,
-          charUuid
-        );
 
-        // After quite a bit of experimentation, the evidence is quite
-        // strong that different event listeners can usually not be
-        // added while notifications are running.  It seems that
-        // sometimes just waiting a while lets you add an event listener
-        // but not always.
+        if (characteristic.properties.notify) {
+          const listener = this.newCharValueListener(
+            handledDevice,
+            serviceUuid,
+            charUuid
+          );
 
-        // TODO: Work out if there's something better we can do with
-        // signal.  TypeScript thinks there is no overload of
-        // addEventListener("characteristicvaluechanged", ...) which
-        // takes an options arg.
-        abortSignal.addEventListener("abort", () =>
-          characteristic.removeEventListener(
+          // After quite a bit of experimentation, the evidence is quite
+          // strong that different event listeners can usually not be
+          // added while notifications are running.  It seems that
+          // sometimes just waiting a while lets you add an event
+          // listener but not always.
+
+          // TODO: Work out if there's something better we can do with
+          // signal.  TypeScript thinks there is no overload of
+          // addEventListener("characteristicvaluechanged", ...) which
+          // takes an options arg.
+          abortSignal.addEventListener("abort", () =>
+            characteristic.removeEventListener(
+              "characteristicvaluechanged",
+              listener
+            )
+          );
+
+          await characteristic.stopNotifications();
+          characteristic.addEventListener(
             "characteristicvaluechanged",
             listener
-          )
-        );
-
-        await characteristic.stopNotifications();
-        characteristic.addEventListener("characteristicvaluechanged", listener);
-        await characteristic.startNotifications();
+          );
+          await characteristic.startNotifications();
+        }
       }
     }
   }
