@@ -155,7 +155,7 @@ class GoDice_Device extends BleHandledDevice {
         // maybe charging started/ended?
         var message = ""; //"unknown message:";
         for (var i = 0; i < len; i++) {
-          message += " 0x" + value.getUint8(i).toString(16);
+          message += " 0x" + value.getUint8(i).toString(16).padStart(2, "00");
         }
         return [{ unknownMessage: message }];
     }
