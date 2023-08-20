@@ -25,7 +25,10 @@ class PicoTempSensor_Driver extends BleDeviceDriver {
     return spec === "Pico Temp";
   }
 
-  canHandleDevice(device: BluetoothDevice, specifier: string): boolean {
+  canHandleDevice(
+    device: BluetoothDevice,
+    specifier: BrowserDeviceSpecifier
+  ): boolean {
     const name = device.name ?? "";
     return name.startsWith("Pico ");
   }

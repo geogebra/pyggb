@@ -41,7 +41,9 @@ class Attack3_Driver extends HidDeviceDriver {
     return device.vendorId === 0x046d && device.productId === 0xc214;
   }
 
-  filtersFromSpecifier(_specifier: string): Array<HIDDeviceFilter> {
+  filtersFromSpecifier(
+    _specifier: BrowserDeviceSpecifier
+  ): Array<HIDDeviceFilter> {
     return [{ vendorId: 0x046d, productId: 0xc214 }];
   }
 
