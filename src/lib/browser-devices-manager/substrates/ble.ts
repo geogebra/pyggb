@@ -72,6 +72,10 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
   handledCharacteristics(): Array<ScopedCharacteristics> {
     throw this._notImplementedError("handledCharacteristics");
   }
+  //
+  namePrefix(): string {
+    throw this._notImplementedError("namePrefix");
+  }
   ////////////////////////////////////////////////////////////////////////
 
   /** Compute and return an array holding the service-Uuids which this
