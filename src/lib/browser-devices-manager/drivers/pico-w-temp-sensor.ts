@@ -43,6 +43,10 @@ class PicoTempSensor_Driver extends BleDeviceDriver {
   handledCharacteristics(): Array<ScopedCharacteristics> {
     return [{ serviceUuid: 0x181a, charUuids: [0x2a6e] }];
   }
+
+  namePrefix(): string {
+    return "Pico ";
+  }
 }
 
 export function register(manager: BrowserDeviceManager) {

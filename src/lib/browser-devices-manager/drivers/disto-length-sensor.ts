@@ -42,7 +42,9 @@ class DistoLengthSensor_Driver extends BleDeviceDriver {
     ];
   }
 
-  // TODO: namePrefix() method
+  namePrefix(): string {
+    return "DISTO ";
+  }
 }
 
 export function register(manager: BrowserDeviceManager) {

@@ -98,7 +98,9 @@ class WowweeMipRobot_Driver extends BleDeviceDriver {
     ];
   }
 
-  // TODO: namePrefix() method
+  namePrefix(): string {
+    return "Mip-";
+  }
 }
 
 export function register(manager: BrowserDeviceManager) {

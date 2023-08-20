@@ -192,7 +192,9 @@ class GoDice_Driver extends BleDeviceDriver {
     ];
   }
 
-  // TODO: namePrefix() method
+  namePrefix(): string {
+    return "GoDice_";
+  }
 }
 
 export function register(manager: BrowserDeviceManager) {
