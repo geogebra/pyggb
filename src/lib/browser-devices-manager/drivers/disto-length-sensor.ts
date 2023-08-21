@@ -25,8 +25,7 @@ class DistoLengthSensor_Driver extends BleDeviceDriver {
     device: BluetoothDevice,
     _specifier: BrowserDeviceSpecifier
   ): boolean {
-    const name = device.name ?? "";
-    return name.startsWith("DISTO ");
+    return this.hasThisNamePrefix(device);
   }
 
   deviceClass() {

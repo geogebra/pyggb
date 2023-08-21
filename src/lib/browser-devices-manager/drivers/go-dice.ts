@@ -176,8 +176,7 @@ class GoDice_Driver extends BleDeviceDriver {
     device: BluetoothDevice,
     _specifier: BrowserDeviceSpecifier
   ): boolean {
-    const name = device.name ?? "";
-    return name.startsWith("GoDice_");
+    return this.hasThisNamePrefix(device);
   }
 
   handledCharacteristics(): Array<ScopedCharacteristics> {

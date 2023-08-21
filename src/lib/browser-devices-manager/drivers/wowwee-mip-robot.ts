@@ -75,8 +75,7 @@ class WowweeMipRobot_Driver extends BleDeviceDriver {
     device: BluetoothDevice,
     _specifier: BrowserDeviceSpecifier
   ): boolean {
-    const name = device.name ?? "";
-    return name.startsWith("Mip-");
+    return this.hasThisNamePrefix(device);
   }
 
   deviceClass() {
