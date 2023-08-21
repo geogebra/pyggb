@@ -106,8 +106,10 @@ class DualShock4_Driver extends HidDeviceDriver {
   }
 
   canHandleDevice(device: HIDDevice, _specifier: BrowserDeviceSpecifier) {
-    // TODO: update to use full list of vendor/device IDs
-    return device.vendorId === 0x54c && device.productId === 0x9cc;
+    return vendorIdsWithProductIds.some(
+      (ids) =>
+        ids.vendorId === device.vendorId && ids.productId === device.productId
+    );
   }
 
   filtersFromSpecifier(
