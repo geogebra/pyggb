@@ -2,6 +2,10 @@ import { BrowserDeviceManager } from "./manager";
 import { register as registerLogitechAttackIII } from "./drivers/logitech-attack-iii";
 import { register as registerPicoW } from "./drivers/pico-w-temp-sensor";
 import { register as registerMantaMM812 } from "./drivers/manta-mm812";
+import { register as registerDistoLengthSensor } from "./drivers/disto-length-sensor";
+import { register as registerDualShock } from "./drivers/dual-shock";
+import { register as registerGoDice } from "./drivers/go-dice";
+import { register as registerWowweeMipRobot } from "./drivers/wowwee-mip-robot";
 
 export type { BrowserDeviceSpecifier, StringKeyedObject } from "./core-types";
 export * as substrates from "./substrates";
@@ -38,6 +42,10 @@ export function createBrowserDeviceManager(): BrowserDeviceManager {
   registerLogitechAttackIII(manager);
   registerPicoW(manager);
   registerMantaMM812(manager);
+  registerDistoLengthSensor(manager);
+  registerDualShock(manager);
+  registerGoDice(manager);
+  registerWowweeMipRobot(manager);
 
   return manager;
 }
