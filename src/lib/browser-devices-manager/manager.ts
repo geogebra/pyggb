@@ -2,7 +2,7 @@ import { BrowserDeviceSpecifier, SessionId } from "./core-types";
 import { BrowserDeviceDriver } from "./driver-interfaces";
 import { BrowserDeviceSession } from "./session";
 import { BrowserHandledDevice } from "./substrates/common";
-import { AnyPhysicalDevice } from "./substrates";
+import { AnyPhysicalDevice } from "./substrates/index";
 
 /** Has collection of `BrowserDeviceDriver`s, each of which knows how to
  * communicate with one particular kind of device.  Maintains collection

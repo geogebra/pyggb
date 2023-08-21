@@ -8,7 +8,7 @@ import { register as registerGoDice } from "./drivers/go-dice";
 import { register as registerWowweeMipRobot } from "./drivers/wowwee-mip-robot";
 
 export type { BrowserDeviceSpecifier, StringKeyedObject } from "./core-types";
-export * as substrates from "./substrates";
+export * as substrates from "./substrates/index";
 
 // TODO: The idea of the "specifier" needs more work.
 
