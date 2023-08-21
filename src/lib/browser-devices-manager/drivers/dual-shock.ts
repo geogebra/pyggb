@@ -2,6 +2,30 @@ import { BrowserDeviceSpecifier, StringKeyedObject } from "../core-types";
 import { BrowserDeviceManager } from "../manager";
 import { HidDeviceDriver, HidHandledDevice } from "../substrates/hid";
 
+const vendorIdsWithProductIds = [
+  { vendorId: 0x054c, productId: 0x0ba0 },
+  { vendorId: 0x054c, productId: 0x05c4 },
+  { vendorId: 0x054c, productId: 0x09cc },
+  { vendorId: 0x054c, productId: 0x05c5 },
+  // Razer Raiju
+  { vendorId: 0x1532, productId: 0x1000 },
+  { vendorId: 0x1532, productId: 0x1007 },
+  { vendorId: 0x1532, productId: 0x1004 },
+  { vendorId: 0x1532, productId: 0x1009 },
+  // Nacon Revol
+  { vendorId: 0x146b, productId: 0x0d01 },
+  { vendorId: 0x146b, productId: 0x0d02 },
+  { vendorId: 0x146b, productId: 0x0d08 },
+  // Other third party controllers
+  { vendorId: 0x0f0d, productId: 0x00ee },
+  { vendorId: 0x7545, productId: 0x0104 },
+  { vendorId: 0x2e95, productId: 0x7725 },
+  { vendorId: 0x11c0, productId: 0x4001 },
+  { vendorId: 0x0c12, productId: 0x57ab },
+  { vendorId: 0x0c12, productId: 0x0e16 },
+  { vendorId: 0x0f0d, productId: 0x0084 },
+];
+
 class DualShock4_Device extends HidHandledDevice {
   acceptInputReport(event: HIDInputReportEvent): Array<StringKeyedObject> {
     var t = event.data;
@@ -89,30 +113,7 @@ class DualShock4_Driver extends HidDeviceDriver {
   filtersFromSpecifier(
     _specifier: BrowserDeviceSpecifier
   ): Array<HIDDeviceFilter> {
-    return [
-      // Official Sony Controllers
-      { vendorId: 0x054c, productId: 0x0ba0 },
-      { vendorId: 0x054c, productId: 0x05c4 },
-      { vendorId: 0x054c, productId: 0x09cc },
-      { vendorId: 0x054c, productId: 0x05c5 },
-      // Razer Raiju
-      { vendorId: 0x1532, productId: 0x1000 },
-      { vendorId: 0x1532, productId: 0x1007 },
-      { vendorId: 0x1532, productId: 0x1004 },
-      { vendorId: 0x1532, productId: 0x1009 },
-      // Nacon Revol
-      { vendorId: 0x146b, productId: 0x0d01 },
-      { vendorId: 0x146b, productId: 0x0d02 },
-      { vendorId: 0x146b, productId: 0x0d08 },
-      // Other third party controllers
-      { vendorId: 0x0f0d, productId: 0x00ee },
-      { vendorId: 0x7545, productId: 0x0104 },
-      { vendorId: 0x2e95, productId: 0x7725 },
-      { vendorId: 0x11c0, productId: 0x4001 },
-      { vendorId: 0x0c12, productId: 0x57ab },
-      { vendorId: 0x0c12, productId: 0x0e16 },
-      { vendorId: 0x0f0d, productId: 0x0084 },
-    ];
+    return vendorIdsWithProductIds;
   }
 
   deviceClass() {
