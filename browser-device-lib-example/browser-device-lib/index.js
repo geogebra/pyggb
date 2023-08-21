@@ -393,7 +393,7 @@ class Attack3_Driver extends HidDeviceDriver {
         return Attack3_Device;
     }
 }
-function register$2(manager) {
+function register$6(manager) {
     manager.registerDriver(new Attack3_Driver());
 }
 
@@ -443,6 +443,10 @@ class BleDeviceDriver {
     //
     handledCharacteristics() {
         throw this._notImplementedError("handledCharacteristics");
+    }
+    //
+    namePrefix() {
+        throw this._notImplementedError("namePrefix");
     }
     ////////////////////////////////////////////////////////////////////////
     /** Compute and return an array holding the service-Uuids which this
@@ -494,20 +498,22 @@ class BleDeviceDriver {
                 // thrown if the service does not have this characteristic?
                 const characteristic = await service.getCharacteristic(charUuid);
                 console.log("got char", characteristic, "for", charUuid);
-                const listener = this.newCharValueListener(handledDevice, serviceUuid, charUuid);
-                // After quite a bit of experimentation, the evidence is quite
-                // strong that different event listeners can usually not be
-                // added while notifications are running.  It seems that
-                // sometimes just waiting a while lets you add an event listener
-                // but not always.
-                // TODO: Work out if there's something better we can do with
-                // signal.  TypeScript thinks there is no overload of
-                // addEventListener("characteristicvaluechanged", ...) which
-                // takes an options arg.
-                abortSignal.addEventListener("abort", () => characteristic.removeEventListener("characteristicvaluechanged", listener));
-                await characteristic.stopNotifications();
-                characteristic.addEventListener("characteristicvaluechanged", listener);
-                await characteristic.startNotifications();
+                if (characteristic.properties.notify) {
+                    const listener = this.newCharValueListener(handledDevice, serviceUuid, charUuid);
+                    // After quite a bit of experimentation, the evidence is quite
+                    // strong that different event listeners can usually not be
+                    // added while notifications are running.  It seems that
+                    // sometimes just waiting a while lets you add an event
+                    // listener but not always.
+                    // TODO: Work out if there's something better we can do with
+                    // signal.  TypeScript thinks there is no overload of
+                    // addEventListener("characteristicvaluechanged", ...) which
+                    // takes an options arg.
+                    abortSignal.addEventListener("abort", () => characteristic.removeEventListener("characteristicvaluechanged", listener));
+                    await characteristic.stopNotifications();
+                    characteristic.addEventListener("characteristicvaluechanged", listener);
+                    await characteristic.startNotifications();
+                }
             }
         }
     }
@@ -558,9 +564,15 @@ class BleDeviceDriver {
         }
         while (true) {
             console.log("attempting requestDevice()");
-            const rawDevice = await navigator.bluetooth.requestDevice({
-                filters: [{ services: this.handledServiceUuids() }],
-            });
+            // Accept devices which either provide the right services or have
+            // the right name-prefix.
+            const filters = [
+                { services: this.handledServiceUuids() },
+                { namePrefix: this.namePrefix() },
+            ];
+            const optionalServices = this.handledServiceUuids();
+            const requestOptions = { filters, optionalServices };
+            const rawDevice = await navigator.bluetooth.requestDevice(requestOptions);
             console.log("working with rawDevice", rawDevice);
             // TODO: Is this the right test for "this device is in use?"
             if (rawDevice.gatt && !rawDevice.gatt.connected) {
@@ -570,6 +582,14 @@ class BleDeviceDriver {
             // Someone else has the device open.
             return null;
         }
+    }
+    /** Whether the given `device` has a `name` which starts with this
+     * device-driver's `namePrefix()`.  Intended to be useful for
+     * subclasses' `canHandleDevice()` implementations. */
+    hasThisNamePrefix(device) {
+        var _a;
+        const name = (_a = device.name) !== null && _a !== void 0 ? _a : "";
+        return name.startsWith(this.namePrefix());
     }
     _notImplementedError(methodName) {
         return new Error(`BleDeviceDriver.${methodName}(): not implemented`);
@@ -594,10 +614,8 @@ class PicoTempSensor_Driver extends BleDeviceDriver {
         // TODO: Do this properly.  Once decided what format spec can take.
         return spec === "Pico Temp";
     }
-    canHandleDevice(device, specifier) {
-        var _a;
-        const name = (_a = device.name) !== null && _a !== void 0 ? _a : "";
-        return name.startsWith("Pico ");
+    canHandleDevice(device, _specifier) {
+        return this.hasThisNamePrefix(device);
     }
     deviceClass() {
         return PicoTempSensor_Device;
@@ -608,8 +626,11 @@ class PicoTempSensor_Driver extends BleDeviceDriver {
     handledCharacteristics() {
         return [{ serviceUuid: 0x181a, charUuids: [0x2a6e] }];
     }
+    namePrefix() {
+        return "Pico ";
+    }
 }
-function register$1(manager) {
+function register$5(manager) {
     manager.registerDriver(new PicoTempSensor_Driver());
 }
 
@@ -634,8 +655,376 @@ class MantaMM812_Driver extends HidDeviceDriver {
         return MantaMM812_Device;
     }
 }
-function register(manager) {
+function register$4(manager) {
     manager.registerDriver(new MantaMM812_Driver());
+}
+
+class DistoLengthSensor_Device extends BleHandledDevice {
+    acceptCharacteristicValue(_serviceUuid, _charUuid, value) {
+        return [{ lengthCM: value.getFloat32(0, true) }];
+    }
+}
+class DistoLengthSensor_Driver extends BleDeviceDriver {
+    canProvide(spec) {
+        return spec === "Disto";
+    }
+    canHandleDevice(device, _specifier) {
+        return this.hasThisNamePrefix(device);
+    }
+    deviceClass() {
+        return DistoLengthSensor_Device;
+    }
+    handledCharacteristics() {
+        return [
+            {
+                serviceUuid: "3ab10100-f831-4395-b29d-570977d5bf94",
+                charUuids: ["3ab10101-f831-4395-b29d-570977d5bf94"],
+            },
+        ];
+    }
+    namePrefix() {
+        return "DISTO ";
+    }
+}
+function register$3(manager) {
+    manager.registerDriver(new DistoLengthSensor_Driver());
+}
+
+const vendorIdsWithProductIds = [
+    { vendorId: 0x054c, productId: 0x0ba0 },
+    { vendorId: 0x054c, productId: 0x05c4 },
+    { vendorId: 0x054c, productId: 0x09cc },
+    { vendorId: 0x054c, productId: 0x05c5 },
+    // Razer Raiju
+    { vendorId: 0x1532, productId: 0x1000 },
+    { vendorId: 0x1532, productId: 0x1007 },
+    { vendorId: 0x1532, productId: 0x1004 },
+    { vendorId: 0x1532, productId: 0x1009 },
+    // Nacon Revol
+    { vendorId: 0x146b, productId: 0x0d01 },
+    { vendorId: 0x146b, productId: 0x0d02 },
+    { vendorId: 0x146b, productId: 0x0d08 },
+    // Other third party controllers
+    { vendorId: 0x0f0d, productId: 0x00ee },
+    { vendorId: 0x7545, productId: 0x0104 },
+    { vendorId: 0x2e95, productId: 0x7725 },
+    { vendorId: 0x11c0, productId: 0x4001 },
+    { vendorId: 0x0c12, productId: 0x57ab },
+    { vendorId: 0x0c12, productId: 0x0e16 },
+    { vendorId: 0x0f0d, productId: 0x0084 },
+];
+class DualShock4_Device extends HidHandledDevice {
+    acceptInputReport(event) {
+        var t = event.data;
+        var data = new Uint8Array(event.data.buffer);
+        let ret = {};
+        ret["leftStickX"] = data[0];
+        ret["leftStickY"] = data[1];
+        ret["rightStickX"] = data[2];
+        ret["rightStickY"] = data[3];
+        const buttons = data[4];
+        ret["triangle"] = !!(128 & buttons);
+        ret["circle"] = !!(64 & buttons);
+        ret["cross"] = !!(32 & buttons);
+        ret["square"] = !!(16 & buttons);
+        const dPad = 15 & buttons;
+        ret["dPadUp"] = 7 === dPad || 0 === dPad || 1 === dPad;
+        ret["dPadRight"] = 1 === dPad || 2 === dPad || 3 === dPad;
+        ret["dPadDown"] = 3 === dPad || 4 === dPad || 5 === dPad;
+        ret["dPadLeft"] = 5 === dPad || 6 === dPad || 7 === dPad;
+        const r = data[5];
+        ret["l1"] = !!(1 & r);
+        ret["r1"] = !!(2 & r);
+        ret["share"] = !!(16 & r);
+        ret["options"] = !!(32 & r);
+        ret["l3"] = !!(64 & r);
+        ret["r3"] = !!(128 & r);
+        // digital versions (omit)
+        //ret["l2"]= !!(4 & r);
+        //ret["r2"]= !!(8 & r);
+        const a = data[6];
+        // analogue versions
+        ret["l2"] = data[7];
+        ret["r2"] = data[8];
+        ret["playStation"] = !!(1 & a);
+        ret["touchPadClick"] = !!(2 & a);
+        ret["charging"] = !!(16 & data[29]);
+        //ret["battery (if charging)"]= Math.floor(100 * (15 & data[29]) / 11);
+        //ret["battery (if not charging)"]= Math.min(100, Math.floor(100 * (15 & data[29]) / 8));
+        ret["gyroX"] = t.getUint16(13);
+        ret["gyroY"] = t.getUint16(15);
+        ret["gyroZ"] = t.getUint16(17);
+        ret["accelX"] = t.getInt16(19);
+        ret["accelY"] = t.getInt16(21);
+        ret["accelZ"] = t.getInt16(23);
+        let touches = [];
+        128 & data[34] ||
+            touches.push({
+                touchId: 127 & data[34],
+                x: ((15 & data[36]) << 8) | data[35],
+                y: (data[37] << 4) | ((240 & data[36]) >> 4),
+            });
+        128 & data[38] ||
+            touches.push({
+                touchId: 127 & data[38],
+                x: ((15 & data[40]) << 8) | data[39],
+                y: (data[41] << 4) | ((240 & data[40]) >> 4),
+            });
+        ret["touches"] = touches;
+        return [ret];
+    }
+}
+class DualShock4_Driver extends HidDeviceDriver {
+    canProvide(specifier) {
+        return specifier === "SonyDualShock4";
+    }
+    canHandleDevice(device, _specifier) {
+        return vendorIdsWithProductIds.some((ids) => ids.vendorId === device.vendorId && ids.productId === device.productId);
+    }
+    filtersFromSpecifier(_specifier) {
+        return vendorIdsWithProductIds;
+    }
+    deviceClass() {
+        return DualShock4_Device;
+    }
+}
+function register$2(manager) {
+    manager.registerDriver(new DualShock4_Driver());
+}
+
+// TODO: Use these?
+//
+// const MESSAGE_GET_BATTERY_LEVEL = 3;
+// const MESSAGE_GET_DIE_COLOR = 23;
+// const MESSAGE_FLASH_LED = 16;
+// const MESSAGE_SET_LED_COLORS = 8;
+const EVENT_BATTERY_LEVEL = 0x42;
+const EVENT_DIE_COLOR = 0x43;
+const EVENT_CHARGING_START_END = 0x68;
+const EVENT_ROLL_STARTED = 0x52;
+const EVENT_ROLL_FINISHED = 0x53;
+const diceColors = ["Black", "Red", "Green", "Blue", "Yellow", "Orange"];
+/** Possible sorts of roll. */
+const rollTypeLUT = (() => {
+    let lut = new Map();
+    lut.set(0, "Regular roll"); // value 0 not explicitly returned, set in code
+    lut.set(0x46, "fake placed");
+    lut.set(0x4d, "placed");
+    lut.set(0x54, "tilted?");
+    return lut;
+})();
+class Vector3 {
+    constructor(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    static dot(v1, v2) {
+        return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+    normalize() {
+        const length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+        if (length > 0) {
+            this.x /= length;
+            this.y /= length;
+            this.z /= length;
+        }
+    }
+}
+/** Vectors for D6.  Should be normalized. */
+const vectorsD6 = [
+    new Vector3(-1, 0, 0),
+    new Vector3(0, 0, 1),
+    new Vector3(0, 1, 0),
+    new Vector3(0, -1, 0),
+    new Vector3(0, 0, -1),
+    new Vector3(1, 0, 0),
+];
+function getValue(x, y, z) {
+    // TODO: handle different # of sides
+    const vectors = vectorsD6;
+    const diceThrow = new Vector3(x, y, z);
+    diceThrow.normalize();
+    let maxDot = -Infinity;
+    let closestVectorIndex = -1;
+    for (let i = 0; i < vectors.length; i++) {
+        const dot = Vector3.dot(diceThrow, vectors[i]);
+        if (dot > maxDot) {
+            maxDot = dot;
+            closestVectorIndex = i;
+        }
+    }
+    return closestVectorIndex + 1;
+}
+class GoDice_Device extends BleHandledDevice {
+    acceptCharacteristicValue(_serviceUuid, _charUuid, value) {
+        console.log("GoDice", value);
+        // ArrayBuffer
+        const buff = value.buffer;
+        // type of roll eg regular, placed
+        let type = 0;
+        let mode;
+        let x;
+        let y;
+        let z;
+        var len = buff.byteLength;
+        switch (len) {
+            case 1:
+                mode = value.getUint8(0);
+                break;
+            case 4:
+                mode = value.getUint8(0);
+                x = value.getInt8(1);
+                y = value.getInt8(2);
+                z = value.getInt8(3);
+                break;
+            case 5:
+                type = value.getUint8(0);
+                mode = value.getUint8(1);
+                x = value.getInt8(2);
+                y = value.getInt8(3);
+                z = value.getInt8(4);
+                break;
+            default:
+                console.error("unhandled case: " + len + " bytes");
+        }
+        switch (mode) {
+            case EVENT_BATTERY_LEVEL:
+                // this event sent automatically when battery charging
+                // as well as when requested with MESSAGE_GET_BATTERY_LEVEL
+                return [{ batteryLevel: z }];
+            case EVENT_DIE_COLOR:
+                return [{ color: z == null ? "unknown" : diceColors[z] }];
+            case EVENT_ROLL_STARTED:
+                return [{ rollStarted: true }];
+            case EVENT_ROLL_FINISHED: {
+                const rolledValue = x != null && y != null && z != null ? getValue(x, y, z) : undefined;
+                return [{ rolledValue, type: rollTypeLUT.get(type) }];
+            }
+            case EVENT_CHARGING_START_END:
+                // [0x43, 0x68, 0x61, 0x72, 0x01] die is placed on charger
+                // [0x43, 0x68, 0x61, 0x72, 0x00] die is removed fom charger
+                const event = z === 1 ? "Placed on charger" : "Removed from charger";
+                return [{ event }];
+            default:
+                // sends [0x43, 0x68, 0x61, 0x72, 0x00] sometimes
+                // maybe charging started/ended?
+                var message = ""; //"unknown message:";
+                for (var i = 0; i < len; i++) {
+                    message += " 0x" + value.getUint8(i).toString(16).padStart(2, "00");
+                }
+                return [{ unknownMessage: message }];
+        }
+    }
+}
+class GoDice_Driver extends BleDeviceDriver {
+    canProvide(spec) {
+        // TODO: Do this properly.  Once decided what format spec can take.
+        return spec === "GoDice";
+    }
+    deviceClass() {
+        return GoDice_Device;
+    }
+    canHandleDevice(device, _specifier) {
+        return this.hasThisNamePrefix(device);
+    }
+    handledCharacteristics() {
+        return [
+            {
+                serviceUuid: "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
+                charUuids: [
+                    "6e400002-b5a3-f393-e0a9-e50e24dcca9e",
+                    "6e400003-b5a3-f393-e0a9-e50e24dcca9e",
+                ],
+            },
+        ];
+    }
+    namePrefix() {
+        return "GoDice_";
+    }
+}
+function register$1(manager) {
+    manager.registerDriver(new GoDice_Driver());
+}
+
+// TODO: Use these?
+//
+// const EVENT_CLAP = [49, 68, 48, 49];
+//
+// 6 bytes in total, last byte is orientation
+// not sure about others
+// const EVENT_ORIENTATION = [55, 57];
+//
+// const EVENT_GESTURE = [48, 65];
+const EVENT_RADAR = [48, 67, 48];
+function match(data, event) {
+    // QUERY: This was "data.length < data.event" but Uint8Array has
+    // no "event" property.
+    if (data.length < event.length) {
+        return false;
+    }
+    for (let i = 0; i < event.length; i++) {
+        if (data[i] !== event[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+class WowweeMipRobot_Device extends BleHandledDevice {
+    acceptCharacteristicValue(_serviceUuid, _charUuid, value) {
+        // QUERY: This was "event.srcElement.value.buffer", but no "event"
+        // in scope.
+        var data = new Uint8Array(value.buffer);
+        if (match(data, EVENT_RADAR)) {
+            switch (data[3]) {
+                case 49:
+                    // far
+                    return [{ radarEvent: 2 }];
+                case 50:
+                    // medium
+                    return [{ radarEvent: 1 }];
+                case 51:
+                    // QUERY: This is the same value as "medium".
+                    // near
+                    return [{ radarEvent: 1 }];
+                default:
+                    // unknown
+                    return [{ radarEvent: NaN }];
+            }
+        }
+        return [{ unknownEvent: data }];
+    }
+}
+class WowweeMipRobot_Driver extends BleDeviceDriver {
+    canProvide(spec) {
+        return spec === "WowWeeMiP";
+    }
+    canHandleDevice(device, _specifier) {
+        return this.hasThisNamePrefix(device);
+    }
+    deviceClass() {
+        return WowweeMipRobot_Device;
+    }
+    handledCharacteristics() {
+        return [
+            {
+                // transmit
+                serviceUuid: "0000ffe5-0000-1000-8000-00805f9b34fb",
+                charUuids: ["0000ffe9-0000-1000-8000-00805f9b34fb"],
+            },
+            {
+                // receive
+                serviceUuid: "0000ffe0-0000-1000-8000-00805f9b34fb",
+                charUuids: ["0000ffe4-0000-1000-8000-00805f9b34fb"],
+            },
+        ];
+    }
+    namePrefix() {
+        return "Mip-";
+    }
+}
+function register(manager) {
+    manager.registerDriver(new WowweeMipRobot_Driver());
 }
 
 // TODO: Not currently using SerialPort or USBDevice.
@@ -688,6 +1077,10 @@ var index = /*#__PURE__*/Object.freeze({
  * already registered. */
 function createBrowserDeviceManager() {
     let manager = new BrowserDeviceManager();
+    register$6(manager);
+    register$5(manager);
+    register$4(manager);
+    register$3(manager);
     register$2(manager);
     register$1(manager);
     register(manager);
