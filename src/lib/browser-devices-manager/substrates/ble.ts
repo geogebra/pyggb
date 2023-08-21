@@ -260,6 +260,14 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
     }
   }
 
+  /** Whether the given `device` has a `name` which starts with this
+   * device-driver's `namePrefix()`.  Intended to be useful for
+   * subclasses' `canHandleDevice()` implementations. */
+  hasThisNamePrefix(device: BluetoothDevice): boolean {
+    const name = device.name ?? "";
+    return name.startsWith(this.namePrefix());
+  }
+
   _notImplementedError(methodName: string) {
     return new Error(`BleDeviceDriver.${methodName}(): not implemented`);
   }
