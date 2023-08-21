@@ -259,6 +259,7 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
       return null;
     }
   }
+
   _notImplementedError(methodName: string) {
     return new Error(`BleDeviceDriver.${methodName}(): not implemented`);
   }
