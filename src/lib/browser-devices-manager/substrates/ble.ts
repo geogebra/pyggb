@@ -126,7 +126,9 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
    * interest to the given `device`.  */
   async connectCharacteristicValueListeners(handledDevice: BleHandledDevice) {
     const device = handledDevice.browserDevice();
+    console.log("connectCharacteristicValueListeners(): awaiting connect()");
     const server = await device.gatt?.connect();
+    console.log("connectCharacteristicValueListeners(): connect() done");
     if (server == null) {
       throw new Error("BleDeviceDriver(): could not connect to gatt");
     }
@@ -212,10 +214,12 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
         // Not available; someone (maybe the requesting session, or
         // maybe another session) under this manager already has a
         // lease.
+        console.log("existing lease on", device);
         continue;
       }
 
       if (!this.canHandleDevice(device, specifier)) {
+        console.log("can't handle", device);
         // Unsuitable device for this driver.
         continue;
       }
