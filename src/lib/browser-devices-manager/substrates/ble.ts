@@ -41,6 +41,36 @@ export class BleHandledDevice extends BrowserHandledDevice {
   ////////////////////////////////////////////////////////////////////////
 }
 
+const firstConnectableDevice = (
+  devices: Array<BluetoothDevice>,
+  timeoutSeconds: number
+) =>
+  new Promise<BluetoothDevice>((resolve, reject) => {
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+
+    const onAdvert = (evt: BluetoothAdvertisingEvent) => {
+      console.log("about to resolve from advert event:", evt);
+      abortController.abort();
+      resolve(evt.device);
+    };
+
+    const onTimeout = () => {
+      abortController.abort();
+      reject(new Error("no device advertisements received in time"));
+    };
+
+    setTimeout(onTimeout, timeoutSeconds * 1000.0);
+
+    devices.forEach((device) => {
+      console.log("watching adverts for", device);
+      device.watchAdvertisements({ signal: abortSignal }).then(() => {
+        console.log("adding event-listener for", device);
+        device.addEventListener("advertisementreceived", onAdvert);
+      });
+    });
+  });
+
 export type ScopedCharacteristics = {
   serviceUuid: BluetoothServiceUUID;
   charUuids: Array<BluetoothCharacteristicUUID>;
