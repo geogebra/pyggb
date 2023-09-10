@@ -237,6 +237,8 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
 
     const allPermittedDevices = await navigator.bluetooth.getDevices();
     console.log("BLE devices", allPermittedDevices);
+
+    let candidateDevices: Array<BluetoothDevice> = [];
     for (const device of allPermittedDevices) {
       const leaseHolder = manager.leaseHolder(device);
       console.log("device", device, "has leaseHolder", leaseHolder);
@@ -254,13 +256,16 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
         continue;
       }
 
+      candidateDevices.push(device);
+    }
+
+    console.log("Candidate BLE devices", candidateDevices);
+
+    if (candidateDevices.length > 0) {
       try {
-        // TODO: This needs more work.  Will have to test whether the
-        // device is actually in range right now.  Might have to do two
-        // passes through the list.  One to collect all suitable
-        // devices, then a second phase which listens for advertisements
-        // for those devices and gives back the first one which
-        // announces itself.
+        console.log("have candidates:", candidateDevices);
+        const device = await firstConnectableDevice(candidateDevices, 10.0);
+        console.log("attempting to createHandledDevice() for", device);
         return await this.createHandledDevice(device);
       } catch (e) {
         console.log("failed to construct handled device", e);
