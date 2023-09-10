@@ -425,6 +425,27 @@ class BleHandledDevice extends BrowserHandledDevice {
         throw new Error("BleHandledDevice.acceptCharacteristicValue(): not implemented");
     }
 }
+const firstConnectableDevice = (devices, timeoutSeconds) => new Promise((resolve, reject) => {
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+    const onAdvert = (evt) => {
+        console.log("about to resolve from advert event:", evt);
+        abortController.abort();
+        resolve(evt.device);
+    };
+    const onTimeout = () => {
+        abortController.abort();
+        reject(new Error("no device advertisements received in time"));
+    };
+    setTimeout(onTimeout, timeoutSeconds * 1000.0);
+    devices.forEach((device) => {
+        console.log("watching adverts for", device);
+        device.watchAdvertisements({ signal: abortSignal }).then(() => {
+            console.log("adding event-listener for", device);
+            device.addEventListener("advertisementreceived", onAdvert);
+        });
+    });
+});
 class BleDeviceDriver {
     ////////////////////////////////////////////////////////////////////////
     // Concrete device drivers must implement the following.
@@ -482,7 +503,9 @@ class BleDeviceDriver {
     async connectCharacteristicValueListeners(handledDevice) {
         var _a;
         const device = handledDevice.browserDevice();
+        console.log("connectCharacteristicValueListeners(): awaiting connect()");
         const server = await ((_a = device.gatt) === null || _a === void 0 ? void 0 : _a.connect());
+        console.log("connectCharacteristicValueListeners(): connect() done");
         if (server == null) {
             throw new Error("BleDeviceDriver(): could not connect to gatt");
         }
@@ -535,6 +558,7 @@ class BleDeviceDriver {
         // one in there which satisfies the specifier and we can connect to.
         const allPermittedDevices = await navigator.bluetooth.getDevices();
         console.log("BLE devices", allPermittedDevices);
+        let candidateDevices = [];
         for (const device of allPermittedDevices) {
             const leaseHolder = manager.leaseHolder(device);
             console.log("device", device, "has leaseHolder", leaseHolder);
@@ -542,19 +566,22 @@ class BleDeviceDriver {
                 // Not available; someone (maybe the requesting session, or
                 // maybe another session) under this manager already has a
                 // lease.
+                console.log("existing lease on", device);
                 continue;
             }
             if (!this.canHandleDevice(device, specifier)) {
+                console.log("can't handle", device);
                 // Unsuitable device for this driver.
                 continue;
             }
+            candidateDevices.push(device);
+        }
+        console.log("Candidate BLE devices", candidateDevices);
+        if (candidateDevices.length > 0) {
             try {
-                // TODO: This needs more work.  Will have to test whether the
-                // device is actually in range right now.  Might have to do two
-                // passes through the list.  One to collect all suitable
-                // devices, then a second phase which listens for advertisements
-                // for those devices and gives back the first one which
-                // announces itself.
+                console.log("have candidates:", candidateDevices);
+                const device = await firstConnectableDevice(candidateDevices, 10.0);
+                console.log("attempting to createHandledDevice() for", device);
                 return await this.createHandledDevice(device);
             }
             catch (e) {
