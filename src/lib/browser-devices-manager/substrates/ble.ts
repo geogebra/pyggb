@@ -41,36 +41,6 @@ export class BleHandledDevice extends BrowserHandledDevice {
   ////////////////////////////////////////////////////////////////////////
 }
 
-const firstConnectableDevice = (
-  devices: Array<BluetoothDevice>,
-  timeoutSeconds: number
-) =>
-  new Promise<BluetoothDevice>((resolve, reject) => {
-    const abortController = new AbortController();
-    const abortSignal = abortController.signal;
-
-    const onAdvert = (evt: BluetoothAdvertisingEvent) => {
-      console.log("about to resolve from advert event:", evt);
-      abortController.abort();
-      resolve(evt.device);
-    };
-
-    const onTimeout = () => {
-      abortController.abort();
-      reject(new Error("no device advertisements received in time"));
-    };
-
-    setTimeout(onTimeout, timeoutSeconds * 1000.0);
-
-    devices.forEach((device) => {
-      console.log("watching adverts for", device);
-      device.watchAdvertisements({ signal: abortSignal }).then(() => {
-        console.log("adding event-listener for", device);
-        device.addEventListener("advertisementreceived", onAdvert);
-      });
-    });
-  });
-
 export type ScopedCharacteristics = {
   serviceUuid: BluetoothServiceUUID;
   charUuids: Array<BluetoothCharacteristicUUID>;
@@ -234,44 +204,6 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
 
     // TODO: Query navigator.bluetooth.getDevices() and see if there's
     // one in there which satisfies the specifier and we can connect to.
-
-    const allPermittedDevices = await navigator.bluetooth.getDevices();
-    console.log("BLE devices", allPermittedDevices);
-
-    let candidateDevices: Array<BluetoothDevice> = [];
-    for (const device of allPermittedDevices) {
-      const leaseHolder = manager.leaseHolder(device);
-      console.log("device", device, "has leaseHolder", leaseHolder);
-      if (leaseHolder != null) {
-        // Not available; someone (maybe the requesting session, or
-        // maybe another session) under this manager already has a
-        // lease.
-        console.log("existing lease on", device);
-        continue;
-      }
-
-      if (!this.canHandleDevice(device, specifier)) {
-        console.log("can't handle", device);
-        // Unsuitable device for this driver.
-        continue;
-      }
-
-      candidateDevices.push(device);
-    }
-
-    console.log("Candidate BLE devices", candidateDevices);
-
-    if (candidateDevices.length > 0) {
-      try {
-        console.log("have candidates:", candidateDevices);
-        const device = await firstConnectableDevice(candidateDevices, 10.0);
-        console.log("attempting to createHandledDevice() for", device);
-        return await this.createHandledDevice(device);
-      } catch (e) {
-        console.log("failed to construct handled device", e);
-        return null;
-      }
-    }
 
     while (true) {
       console.log("attempting requestDevice()");
