@@ -27,3 +27,24 @@ Implement Web USB devices.
 
 Tests!  This could be tricky; do we mock all the different types of
 error and device we might get back from the browser?
+
+# Building rolled-up version
+
+```
+cd $GIT_ROOT/browser-device-lib
+npm run build
+```
+
+which emits `index.js` to the `output` directory. Then overwrite the
+copy in the 'example' directory:
+
+```
+cp -vi output/index.js ../browser-device-lib-example/browser-device-lib
+```
+
+This should ask you if you want to overwrite; say yes.  Then commit
+the file
+
+```
+$GIT_ROOT/browser-device-lib-example/browser-device-lib/index.js
+```
