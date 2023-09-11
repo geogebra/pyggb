@@ -202,8 +202,11 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
       return null;
     }
 
-    // TODO: Query navigator.bluetooth.getDevices() and see if there's
-    // one in there which satisfies the specifier and we can connect to.
+    // We did experiment with using navigator.bluetooth.getDevices() to
+    // find a device the user has already permitted us to access, and
+    // then connect to that device.  However, this did not work
+    // reliably, so for now we are accepting that the user will
+    // encounter the pop-up permissions dialog when using a BT device.
 
     while (true) {
       console.log("attempting requestDevice()");
