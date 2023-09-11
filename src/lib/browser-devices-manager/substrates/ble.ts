@@ -193,7 +193,7 @@ export class BleDeviceDriver implements BrowserDeviceDriver {
   }
 
   async tryProvideDevice(
-    manager: BrowserDeviceManager,
+    _manager: BrowserDeviceManager,
     specifier: BrowserDeviceSpecifier
   ): Promise<BleHandledDevice | null> {
     console.log("BLE tryProvideDevice()", specifier);
