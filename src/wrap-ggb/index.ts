@@ -17,6 +17,7 @@ import { register as registerDistance } from "./wrappings/distance";
 import { register as registerIntersect } from "./wrappings/intersect";
 import { register as registerZoom } from "./wrappings/zoom";
 import { register as registerNumberOfObjects } from "./wrappings/number-of-objects";
+import { register as registerAngleBisector } from "./wrappings/angle-bisector";
 
 import { register as registerClearConsole } from "./app-ui/clear-console";
 
@@ -54,6 +55,7 @@ declare var Sk: SkulptApi;
   registerIntersect(mod, appApi);
   registerZoom(mod, appApi);
   registerNumberOfObjects(mod, appApi);
+  registerAngleBisector(mod, appApi);
 
   registerClearConsole(mod, appApi);
 
