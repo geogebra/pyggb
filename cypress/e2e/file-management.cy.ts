@@ -44,7 +44,9 @@ describe("File management", () => {
     cy.get(".MenuBar").contains(filename);
 
     cy.get("span.FilenameDisplayOrEdit").dblclick();
-    cy.get("input").clear().type(newFilename).type("{enter}");
+    cy.get("input").clear();
+    cy.get("input").type(newFilename);
+    cy.get("input").type("{enter}");
     cy.get("span.FilenameDisplayOrEdit").contains(newFilename);
   });
 
