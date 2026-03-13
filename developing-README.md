@@ -57,7 +57,7 @@ checked out on the branch `github-pages`:
 
 ``` shell
 ./tools/build-examples.sh
-PUBLIC_URL=/pyggb npm run build
+env VITE_DOCS_BASE_URL_WITHIN_APP=/doc npx vite build --base=/pyggb/
 rsync --exclude='*~' --exclude=.git --exclude=vendor/geogebra/GeoGebra --delete --checksum -rtvn build/ pages/
 # Then if that looks OK, same without "vn" options:
 rsync --exclude='*~' --exclude=.git --exclude=vendor/geogebra/GeoGebra --delete --checksum -rt build/ pages/
