@@ -22,7 +22,16 @@ export default defineConfig({
     parser: tseslint.parser,
     parserOptions: {
       // Enable project service for better TypeScript integration
-      projectService: true,
+      projectService: {
+        // These are build-tooling config files not covered by
+        // tsconfig.json's `include` — allow them to use a default,
+        // non-type-checked project instead of failing to parse.
+        allowDefaultProject: [
+          "cypress.config.ts",
+          "eslint.config.ts",
+          "vite.config.mts",
+        ],
+      },
       tsconfigRootDir: import.meta.dirname,
     },
   },

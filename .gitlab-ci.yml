@@ -7,6 +7,7 @@ variables:
   PYGGB_HOSTED_BASE_PATH: python
 
 stages:
+  - lint
   - build-dependencies
   - build
   - release
@@ -19,6 +20,13 @@ build-examples:
   artifacts:
     paths:
       - public/examples/index.json
+
+run-lint:
+  stage: lint
+  rules:
+    - when: always
+  script:
+    - npm run lint
 
 build-docs:
   stage: build-dependencies
